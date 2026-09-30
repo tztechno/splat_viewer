@@ -882,14 +882,28 @@ async function main() {
         if (e.data.buffer) {
             splatData = new Uint8Array(e.data.buffer);
             if (e.data.save) {
-                const blob = new Blob([splatData.buffer], {
-                    type: "application/octet-stream",
-                });
-                const link = document.createElement("a");
-                link.download = "model.splat";
-                link.href = URL.createObjectURL(blob);
-                document.body.appendChild(link);
-                link.click();
+                const saveName = loadedFileName.replace(/\.ply$/i, "") + ".splat";
+                if (window.__TAURI__) {
+                    // Desktop app: <a download> does nothing in the webview, so save via a native dialog
+                    window.__TAURI__.core
+                        .invoke("save_splat", splatData, {
+                            headers: { "x-file-name": saveName },
+                        })
+                        .then((path) => path && console.log("Saved", path))
+                        .catch((err) => {
+                            document.getElementById("message").innerText =
+                                "Failed to save .splat: " + err;
+                        });
+                } else {
+                    const blob = new Blob([splatData.buffer], {
+                        type: "application/octet-stream",
+                    });
+                    const link = document.createElement("a");
+                    link.download = saveName;
+                    link.href = URL.createObjectURL(blob);
+                    document.body.appendChild(link);
+                    link.click();
+                }
             }
         } else if (e.data.texdata) {
             const { texdata, texwidth, texheight } = e.data;
@@ -931,10 +945,13 @@ async function main() {
 
     let activeKeys = [];
     let currentCameraIndex = 0;
+    let loadedFileName = "model";
 
     // main.js の window.addEventListener("keydown", ...) セクションに追加
 
     window.addEventListener("keydown", (e) => {
+        // Don't treat typing in the URL box as camera controls
+        if (e.target.tagName === "INPUT") return;
         carousel = false;
         if (!activeKeys.includes(e.code)) activeKeys.push(e.code);
         if (/\d/.test(e.key)) {
@@ -972,14 +989,8 @@ async function main() {
                 console.log("Camera position copied to clipboard!");
                 console.log("View Matrix:", matrixString);
 
-                // URLも生成して表示
-                const url = window.location.origin + window.location.pathname +
-                    "?url=" + new URLSearchParams(window.location.search).get("url") +
-                    "#" + encodeURIComponent(matrixString);
-                console.log("Full URL:", url);
-
                 // 画面に一時的に表示
-                showCameraInfo(roundedMatrix, url);
+                showCameraInfo(roundedMatrix);
             }).catch(err => {
                 console.error("Failed to copy:", err);
                 alert("View Matrix: " + matrixString);
@@ -999,7 +1010,7 @@ async function main() {
     });
 
     // カメラ情報を表示する関数を追加
-    function showCameraInfo(matrix, url) {
+    function showCameraInfo(matrix) {
         let infoDiv = document.getElementById("cameraInfo");
 
         if (!infoDiv) {
@@ -1029,10 +1040,6 @@ async function main() {
         <div style="margin-bottom: 5px;">View Matrix:</div>
         <div style="background: rgba(255,255,255,0.1); padding: 5px; border-radius: 3px; margin-bottom: 10px;">
             ${JSON.stringify(matrix, null, 2)}
-        </div>
-        <div style="margin-bottom: 5px;">Full URL:</div>
-        <div style="background: rgba(255,255,255,0.1); padding: 5px; border-radius: 3px; font-size: 10px; max-height: 100px; overflow-y: auto;">
-            ${url}
         </div>
         <div style="margin-top: 10px; font-size: 11px; color: #888;">
             Press 'R' to hide | Press 'C' again to update
@@ -1484,6 +1491,14 @@ async function main() {
         splatData[3] == 10;
 
     const selectFile = (file) => {
+        loadedFileName = file.name;
+        const fileNameBadge = document.getElementById("loaded-filename");
+        if (fileNameBadge) {
+            fileNameBadge.innerText = file.name;
+            fileNameBadge.style.display = "inline-block";
+            fileNameBadge.title = file.name;
+        }
+
         const fr = new FileReader();
         if (/\.json$/i.test(file.name)) {
             fr.onload = () => {
@@ -1502,6 +1517,8 @@ async function main() {
             fr.readAsText(file);
         } else {
             stopLoading = true;
+            document.getElementById("spinner").style.display = "";
+            document.getElementById("message").innerText = "";
             fr.onload = () => {
                 splatData = new Uint8Array(fr.result);
                 console.log("Loaded", Math.floor(splatData.length / rowLength));
@@ -1520,12 +1537,50 @@ async function main() {
         }
     };
 
+    const openFileBtn = document.getElementById("open-file-btn");
+    const splatFileInput = document.getElementById("splat-file-input");
+    if (openFileBtn && splatFileInput) {
+        openFileBtn.addEventListener("click", () => {
+            splatFileInput.value = "";
+            splatFileInput.click();
+        });
+        splatFileInput.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0]) {
+                selectFile(e.target.files[0]);
+            }
+        });
+    }
+
     window.addEventListener("hashchange", (e) => {
         try {
             viewMatrix = JSON.parse(decodeURIComponent(location.hash.slice(1)));
             carousel = false;
         } catch (err) {}
     });
+
+    // "Set View" box: paste a view matrix copied with the C key (works without an address bar)
+    const viewForm = document.getElementById("view-form");
+    const viewInput = document.getElementById("view-input");
+    if (viewForm && viewInput) {
+        viewForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            let matrix;
+            try {
+                matrix = JSON.parse(viewInput.value.trim().replace(/^#/, ""));
+            } catch (err) {}
+            const valid =
+                Array.isArray(matrix) &&
+                matrix.length === 16 &&
+                matrix.every((k) => typeof k === "number" && isFinite(k));
+            viewInput.style.borderColor = valid ? "" : "#ff5252";
+            viewInput.title = valid ? "" : "Enter 16 numbers, e.g. [-0.64,0.76,...]";
+            if (!valid) return;
+            viewMatrix = matrix;
+            carousel = false;
+            camid.innerText = "";
+            viewInput.blur();
+        });
+    }
 
     const preventDefault = (e) => {
         e.preventDefault();
@@ -1572,6 +1627,21 @@ async function main() {
             });
         }
     }
+}
+
+// "Load URL" box: same as the ?url= parameter, so it also works in the desktop app (no address bar)
+const urlForm = document.getElementById("url-form");
+const urlInput = document.getElementById("url-input");
+if (urlForm && urlInput) {
+    urlInput.value = new URLSearchParams(location.search).get("url") || "";
+    urlForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const value = urlInput.value.trim();
+        if (value) {
+            location.href =
+                location.pathname + "?url=" + encodeURIComponent(value);
+        }
+    });
 }
 
 main().catch((err) => {

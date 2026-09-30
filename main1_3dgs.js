@@ -1484,6 +1484,13 @@ async function main() {
         splatData[3] == 10;
 
     const selectFile = (file) => {
+        const fileNameBadge = document.getElementById("loaded-filename");
+        if (fileNameBadge) {
+            fileNameBadge.innerText = file.name;
+            fileNameBadge.style.display = "inline-block";
+            fileNameBadge.title = file.name;
+        }
+
         const fr = new FileReader();
         if (/\.json$/i.test(file.name)) {
             fr.onload = () => {
@@ -1502,6 +1509,8 @@ async function main() {
             fr.readAsText(file);
         } else {
             stopLoading = true;
+            document.getElementById("spinner").style.display = "";
+            document.getElementById("message").innerText = "";
             fr.onload = () => {
                 splatData = new Uint8Array(fr.result);
                 console.log("Loaded", Math.floor(splatData.length / rowLength));
@@ -1519,6 +1528,20 @@ async function main() {
             fr.readAsArrayBuffer(file);
         }
     };
+
+    const openFileBtn = document.getElementById("open-file-btn");
+    const splatFileInput = document.getElementById("splat-file-input");
+    if (openFileBtn && splatFileInput) {
+        openFileBtn.addEventListener("click", () => {
+            splatFileInput.value = "";
+            splatFileInput.click();
+        });
+        splatFileInput.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0]) {
+                selectFile(e.target.files[0]);
+            }
+        });
+    }
 
     window.addEventListener("hashchange", (e) => {
         try {

@@ -162,6 +162,15 @@
 				z-index: 999;
 				right: 10px;
 			}
+
+			#view-form {
+				position: absolute;
+				top: 34px;
+				right: 10px;
+				z-index: 999;
+				margin: 0;
+				justify-content: flex-end;
+			}
 			#canvas {
 				display: block;
 				position: absolute;
@@ -179,6 +188,84 @@
 				border-radius: 10px;
 				font-size: x-small;
 			}
+
+			.btn-container {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				margin: 10px 0 12px 0;
+				flex-wrap: wrap;
+			}
+
+			.load-btn {
+				background: rgba(255, 255, 255, 0.15);
+				color: #ffffff;
+				border: 1px solid rgba(255, 255, 255, 0.35);
+				backdrop-filter: blur(10px);
+				-webkit-backdrop-filter: blur(10px);
+				padding: 7px 15px;
+				border-radius: 8px;
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+				display: inline-flex;
+				align-items: center;
+				gap: 7px;
+				transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+				text-shadow: none;
+				user-select: none;
+			}
+
+			.load-btn:hover {
+				background: rgba(255, 255, 255, 0.28);
+				border-color: rgba(255, 255, 255, 0.7);
+				transform: translateY(-1px);
+				box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+			}
+
+			.load-btn:active {
+				transform: translateY(0);
+				background: rgba(255, 255, 255, 0.12);
+			}
+
+			.load-btn svg {
+				width: 16px;
+				height: 16px;
+				fill: currentColor;
+			}
+
+			.url-input {
+				background: rgba(0, 0, 0, 0.45);
+				color: #ffffff;
+				border: 1px solid rgba(255, 255, 255, 0.35);
+				border-radius: 8px;
+				padding: 7px 10px;
+				font-size: 13px;
+				width: 260px;
+				max-width: 60vw;
+				text-shadow: none;
+			}
+
+			.url-input:focus {
+				outline: none;
+				border-color: #00e5ff;
+			}
+
+			.loaded-filename {
+				font-size: 12px;
+				color: #00e5ff;
+				background: rgba(0, 229, 255, 0.12);
+				border: 1px solid rgba(0, 229, 255, 0.3);
+				padding: 4px 8px;
+				border-radius: 4px;
+				max-width: 200px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				display: none;
+			}
+
 			body.nohf .nohf {
 				display: none;
 			}
@@ -211,6 +298,23 @@
 				<a href="https://github.com/tztechno/splat">Github</a>.
 			</small>
 			</p>
+
+			<div class="btn-container">
+				<button id="open-file-btn" class="load-btn" type="button" title="Open a local .splat / .ply / cameras.json file">
+					<svg viewBox="0 0 24 24">
+						<path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
+					</svg>
+					<span>Open Splat File</span>
+				</button>
+				<input type="file" id="splat-file-input" accept=".splat,.ply,.json" style="display: none;" />
+				<span id="loaded-filename" class="loaded-filename"></span>
+			</div>
+
+			<form id="url-form" class="btn-container">
+				<input id="url-input" class="url-input" type="text" spellcheck="false" autocomplete="off"
+					placeholder="Model file name or URL (e.g. church.splat)" />
+				<button class="load-btn" type="submit" title="Load a .splat / .ply model from its file name or URL">Load URL</button>
+			</form>
 
 			<details>
 			<summary>Use mouse or arrow keys to navigate.</summary>
@@ -282,6 +386,12 @@ other
 		<div id="caminfo">
 			<span id="camid"></span>
 		</div>
+		<!-- Top-right, so it doesn't overlap the C key panel at the top-left -->
+		<form id="view-form" class="btn-container">
+			<input id="view-input" class="url-input" type="text" spellcheck="false" autocomplete="off"
+				placeholder="View matrix (e.g. [-0.64,0.76,...])" />
+			<button class="load-btn" type="submit" title="Show the model from a view matrix copied with the C key">Set View</button>
+		</form>
 		<script src="main.js"></script>
 	</body>
 </html>
