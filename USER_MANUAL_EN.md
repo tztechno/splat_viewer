@@ -167,7 +167,7 @@ Click the **"Open Splat File"** button located at the top-left corner to open a 
 Drag any local `.splat`, `.ply`, or `cameras.json` file directly onto the browser canvas to load and render it immediately.
 
 ### Using the "Load URL" Box
-Type the file name (e.g. `church.splat`) or URL (e.g. `https://example.com/models/my_scene.splat`) of the model file to open into the box below the **Open Splat File** button, then press **Enter** or click **Load URL**. This does the same as the `?url=` parameter described below. While the cursor is in the box, keys do not move the camera.
+Type the file name (e.g. `church.splat`) or URL (e.g. `https://example.com/models/my_scene.splat`) of the model file to open into the box at the top-center of the screen, then press **Enter** or click **Load URL**. This does the same as the `?url=` parameter described below. While the cursor is in the box, keys do not move the camera.
 
 ### Using the "Set View" Box
 Paste a view matrix copied with the **C** key (e.g. `[-0.64,0.76,...]`) into the box at the top-right (below the camera number), then press **Enter** or click **Set View** to switch to that angle. The file is not reloaded. This does the same as `#[matrix]` in the URL. If the input is not 16 numbers, the box turns red.

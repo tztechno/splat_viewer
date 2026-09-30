@@ -163,6 +163,16 @@
 				right: 10px;
 			}
 
+			#url-form {
+				position: absolute;
+				top: 10px;
+				left: 50%;
+				transform: translateX(-50%);
+				z-index: 999;
+				margin: 0;
+				flex-wrap: nowrap;
+			}
+
 			#view-form {
 				position: absolute;
 				top: 34px;
@@ -310,12 +320,6 @@
 				<span id="loaded-filename" class="loaded-filename"></span>
 			</div>
 
-			<form id="url-form" class="btn-container">
-				<input id="url-input" class="url-input" type="text" spellcheck="false" autocomplete="off"
-					placeholder="Model file name or URL (e.g. church.splat)" />
-				<button class="load-btn" type="submit" title="Load a .splat / .ply model from its file name or URL">Load URL</button>
-			</form>
-
 			<details>
 			<summary>Use mouse or arrow keys to navigate.</summary>
 
@@ -386,6 +390,11 @@ other
 		<div id="caminfo">
 			<span id="camid"></span>
 		</div>
+		<form id="url-form" class="btn-container">
+			<input id="url-input" class="url-input" type="text" spellcheck="false" autocomplete="off"
+				placeholder="Model file name or URL (e.g. church.splat)" />
+			<button class="load-btn" type="submit" title="Load a .splat / .ply model from its file name or URL">Load URL</button>
+		</form>
 		<!-- Top-right, so it doesn't overlap the C key panel at the top-left -->
 		<form id="view-form" class="btn-container">
 			<input id="view-input" class="url-input" type="text" spellcheck="false" autocomplete="off"

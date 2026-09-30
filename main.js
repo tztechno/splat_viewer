@@ -762,6 +762,8 @@ async function main() {
     const req = await fetch(url, {
         mode: "cors", // no-cors, *cors, same-origin
         credentials: "omit", // include, *same-origin, omit
+        // Hugging Face returns 404 (no CORS headers) when the Referer is a *.workers.dev page
+        referrerPolicy: "no-referrer",
     });
     console.log(req);
     if (req.status != 200)
