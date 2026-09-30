@@ -789,7 +789,6 @@ async function main() {
 
     const canvas = document.getElementById("canvas");
     const fps = document.getElementById("fps");
-    const camid = document.getElementById("camid");
 
     let projectionMatrix;
 
@@ -970,7 +969,6 @@ async function main() {
             currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
             viewMatrix = getViewMatrix(cameras[currentCameraIndex]);
         }
-        camid.innerText = "cam  " + currentCameraIndex;
 
         // 既存のKeyV機能
         if (e.code == "KeyV") {
@@ -979,7 +977,6 @@ async function main() {
                 JSON.stringify(
                     viewMatrix.map((k) => Math.round(k * 100) / 100),
                 );
-            camid.innerText = "";
         }
         // 新機能: KeyC で現在のカメラ位置情報を表示・コピー
         else if (e.code === "KeyC") {
@@ -1007,7 +1004,6 @@ async function main() {
         }
         else if (e.code === "KeyP") {
             carousel = true;
-            camid.innerText = "";
         }
     });
 
@@ -1477,9 +1473,6 @@ async function main() {
             document.getElementById("progress").style.display = "none";
         }
         fps.innerText = Math.round(avgFps) + " fps";
-        if (isNaN(currentCameraIndex)) {
-            camid.innerText = "";
-        }
         lastFrame = now;
         requestAnimationFrame(frame);
     };
@@ -1579,7 +1572,6 @@ async function main() {
             if (!valid) return;
             viewMatrix = matrix;
             carousel = false;
-            camid.innerText = "";
             viewInput.blur();
         });
     }
